@@ -1,0 +1,805 @@
+    <!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="windows-1252">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.rawgit.com/oliver-moran/jimp/v0.2.27/browser/lib/jimp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+
+        var imagem_1 = null;
+        var imagem_2 = null;
+		var imagem_3 = null;
+		
+        function mostrarImagem(element,valor) {
+          var arquivo = element.files[0];
+          var reader = new FileReader();
+          reader.readAsArrayBuffer(arquivo);
+          reader.addEventListener('load', function(){
+            Jimp.read(this.result)
+              .then(function(imagem){
+                imagem = imagem.resize(320, 200);
+                if(valor===1)
+                    imagem_1 = imagem;
+                else
+				{
+				if(valor===2)
+				{
+				  imagem_2 = imagem;
+				}else
+				{
+				  imagem_3 = imagem;
+				}				                  
+								
+				}
+				exibirImagem(imagem,valor);
+
+              })
+              .catch(function(erro){
+                console.log('Não foi possível processar os dados da imagem.');
+                console.log(erro);
+              });
+          });
+        }
+        function exibirImagem(imagem,valor) {
+          imagem.getBase64(Jimp.MIME_JPEG, function(err, src){
+            if(valor === 1){
+                var img = document.getElementById('display');
+                img.setAttribute('src', src);
+            }
+            else if(valor === 2) {
+                var img = document.getElementById('display-img2');
+                img.setAttribute('src', src);
+            }
+            else{
+                 var img = document.getElementById('display-img3');
+                img.setAttribute('src', src);
+            }
+                
+            });
+        }
+        
+        function sobreposicao(imagemT){
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+            var imagem = imagem_2.clone();
+            var imagem1 = imagem_1.clone();
+            for(var i = 0; i < w; i++) {
+                for(var j = 0; j < h; j++) {
+                    var cor = imagemT.getPixelColor(i, j);
+                    var rgba = Jimp.intToRGBA(cor);
+                    if(rgba.r >= 254 && rgba.g >= 254 && rgba.b >= 254){
+                        var img1Pxl = imagem1.getPixelColor(i, j);
+                        imagem.setPixelColor(img1Pxl, i, j);
+                    }
+                }
+            }
+            exibirImagem(imagem,3)
+        }
+        
+        function CondicionalFilter(valor, thres) {
+          if (valor <= thres) {
+            return 0;
+          } else {
+            return 255;
+          }
+        }
+        function aplicarThreshold() {
+		
+          var t = parseInt(document.getElementById('threshold').value); 
+		       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+           		
+        
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {
+              var cor = imagem_2.getPixelColor(i, j);
+              var rgba = Jimp.intToRGBA(cor);
+			  
+              rgba.r = CondicionalFilter(rgba.r, t);
+              rgba.g = rgba.r;
+              rgba.b = rgba.r;
+			  
+              var hex = Jimp.rgbaToInt(rgba.r, rgba.g, rgba.b, rgba.a);
+              imagem_2.setPixelColor(hex, i, j);
+            }
+          }         
+          exibirImagem(imagem_2,2);
+        }
+		
+		
+		  function aplicarThreshold2() {
+		
+          var t = parseInt(document.getElementById('threshold').value); 
+		       
+            var w = imagem_3.bitmap.width;
+            var h = imagem_3.bitmap.height;
+
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {
+              var cor = imagem_3.getPixelColor(i, j);
+              var rgba = Jimp.intToRGBA(cor);
+			  
+              rgba.r = CondicionalFilter(rgba.r, t);
+              rgba.g = rgba.r;
+              rgba.b = rgba.r;
+			  
+              var hex = Jimp.rgbaToInt(rgba.r, rgba.g, rgba.b, rgba.a);
+              imagem_3.setPixelColor(hex, i, j);
+            }
+          }         
+          exibirImagem(imagem_3,3);
+        }
+		
+		
+		 function aplicarNegativo() {       
+            var w = imagem_1.bitmap.width;
+            var h = imagem_1.bitmap.height;
+            var imagem = imagem_1.clone();
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor = imagem.getPixelColor(i, j);
+			  
+              var rgba = Jimp.intToRGBA(cor);
+			     rgba.r = 255 - rgba.r;
+				 rgba.g = 255 - rgba.g;
+				 rgba.b = 255 - rgba.b;	 			
+              var hex = Jimp.rgbaToInt(rgba.r, rgba.g, rgba.b, rgba.a);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+          exibirImagem(imagem,3);                 
+        }
+		
+		
+		 function aplicarAND() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  var r = AuxAND(rgba2.r,rgba3.r);
+			
+              var hex = Jimp.rgbaToInt(r, r, r, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+          exibirImagem(imagem,1);                 
+        }
+		
+		 function AuxAND(rgb1,rgb2) {		 
+			if((rgb1 == 0) && (rgb2 == 0))
+			{
+				return 0;
+			}else
+			{
+				return 255;			
+			}
+			
+		 }
+		 
+		 
+		 
+		  function aplicarOR() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  var r = AuxOR(rgba2.r,rgba3.r);
+			
+              var hex = Jimp.rgbaToInt(r, r, r, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+          exibirImagem(imagem,1);                 
+        }
+		 
+			 function AuxOR(rgb1,rgb2) {		 
+			if((rgb1 == 0) || (rgb2 == 0))
+			{
+				return 0;
+			}else
+			{
+				return 255;			
+			}
+			
+		 }
+		 
+		 
+		 
+		 	 
+		  function aplicarSOMA() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba2.r + rgba3.r);
+			  result.g = (rgba2.g + rgba3.g);
+			  result.b =(rgba2.b + rgba3.b);
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba2.r + rgba3.r),min.r,max.r);
+			  result.g = escalonar((rgba2.g + rgba3.g),min.g,max.g);
+			  result.b = escalonar((rgba2.b + rgba3.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,1);                 
+        }
+		 
+			
+		 
+		 	 function escalonar(pix,min,max) {		 
+		
+				return (255/(max-min))*(pix-min); 
+			
+		 }
+		 
+		 
+		 
+		 /*
+		 function aplicarSUB() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba2.r - rgba3.r);
+			  result.g = (rgba2.g - rgba3.g);
+			  result.b =(rgba2.b - rgba3.b);
+			  
+			
+			if(result.r < 0)
+			{
+			  result.r = (rgba3.r - rgba2.r);
+			}
+				if( result.g < 0)
+			{
+				  result.g = (rgba3.g - rgba2.g);
+			}
+				if(  result.b < 0)
+			{
+				result.b = (rgba3.b - rgba2.b);
+			}
+			
+			
+			
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+			  var result  = {};
+			  var bug  = {};
+			  result.r = rgba2.r - rgba3.r;
+			  result.g = rgba2.g - rgba3.g;
+			  result.b =rgba2.b - rgba3.b;
+			  
+			
+			if(result.r < 0)
+			{
+			  result.r = (rgba3.r - rgba2.r);
+			}
+				if( result.g < 0)
+			{
+				  result.g = (rgba3.g - rgba2.g);
+			}
+				if(  result.b < 0)
+			{
+				result.b = (rgba3.b - rgba2.b);
+			}
+		
+	
+			bug.r = escalonar(result.r,min.r,max.r);
+			  bug.g = escalonar(result.g,min.g,max.g);
+			  bug.b = escalonar(result.b,min.b,max.b);
+			  
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(bug.r,bug.g,bug.b, 255);
+		
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,1);                 
+        }*/
+		
+		///////
+		 
+		 function aplicarSUB() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba2.r - rgba3.r);
+			  result.g = (rgba2.g - rgba3.g);
+			  result.b =(rgba2.b - rgba3.b);
+			  
+			
+			
+			
+			
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+			  var result  = {};
+			  var bug  = {};
+			  result.r = rgba2.r - rgba3.r;
+			  result.g = rgba2.g - rgba3.g;
+			  result.b =rgba2.b - rgba3.b;
+			  
+		
+		
+	
+			bug.r = escalonar(result.r,min.r,max.r);
+			  bug.g = escalonar(result.g,min.g,max.g);
+			  bug.b = escalonar(result.b,min.b,max.b);
+			  
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(bug.r,bug.g,bug.b, 255);
+		
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,1);                 
+        }
+		///
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		 
+		 	 function aplicarMULT() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba2.r *rgba3.r);
+			  result.g = (rgba2.g * rgba3.g);
+			  result.b =(rgba2.b * rgba3.b);
+			  
+			
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba2.r * rgba3.r),min.r,max.r);
+			  result.g = escalonar((rgba2.g * rgba3.g),min.g,max.g);
+			  result.b = escalonar((rgba2.b * rgba3.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+			  	  console.log(hex);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,1);                 
+        }
+		 
+		 
+		 	 function aplicarDIV() {       
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba2.r / rgba3.r);
+			  result.g = (rgba2.g / rgba3.g);
+			  result.b =(rgba2.b  / rgba3.b);
+			  
+			
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor2 = imagem_2.getPixelColor(i, j);
+			  var cor3 = imagem_3.getPixelColor(i, j);			  
+              var rgba2 = Jimp.intToRGBA(cor2);
+			  var rgba3 = Jimp.intToRGBA(cor3);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba2.r / rgba3.r),min.r,max.r);
+			  result.g = escalonar((rgba2.g / rgba3.g),min.g,max.g);
+			  result.b = escalonar((rgba2.b / rgba3.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,1);                 
+        }
+		 
+		 
+        </script>
+		
+		
+  </head>
+  <body>
+   <!--
+    <p>Escolha um arquivo de imagem</p>
+    <input type="file" id="img" onchange="mostrarImagem(this,1)">
+    <br>
+    <img id="display">
+	<button onclick="aplicarNegativo()">Aplicar Negativo</button>
+    <br>
+	 -->
+   
+    <p>Escolha um arquivo de imagem</p>
+    <input type="file" id="img2" onchange="mostrarImagem(this,2)">
+    <p>Escolha um valor para o threshold</p>
+    <input type="number" value="50" id="threshold">
+	<button onclick="aplicarThreshold()">aplicar</button>
+    <br>
+    <img id="display-img2">
+	
+	<p>Escolha um arquivo de imagem</p>
+    <input type="file" id="img3" onchange="mostrarImagem(this,3)">
+
+	<button onclick="aplicarThreshold2()">aplicar</button>
+    <br>
+    <img id="display-img3">
+	
+	
+		<button onclick="aplicarDIV()">Aplicar OR</button>
+		
+		  <img id="display">
+	
+
+  </body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Laboratório JIMP</title>
+    <script src="https://cdn.rawgit.com/oliver-moran/jimp/v0.2.27/browser/lib/jimp.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+        var imagem_atual = null;
+        function mostrarImagem(element) {
+            var arquivo = element.files[0];
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(arquivo);
+            reader.addEventListener('load', function(){
+                Jimp.read(this.result)
+                    .then(function(imagem){
+                        imagem = imagem.resize(120, 100);
+                        imagem_atual = imagem;
+                        exibirImagem(imagem);
+                    })
+                    .catch(function(erro){
+                        console.log('Não foi possível processar os dados da imagem.');
+                        console.log(erro);
+                    });
+
+            });
+        }
+
+        function exibirImagem(imagem) {
+            imagem.getBase64(Jimp.MIME_JPEG, function(err, src){
+                var img = document.getElementById('display');
+                img.setAttribute('src', src);
+            });
+        }
+
+        function threshold_filter(v, t) {
+            if (v <= t) {
+                return 0;
+            } else {
+                return 255;
+            }
+        }
+
+		
+		function histBasic()
+		{
+			var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+			
+				var obj = {}
+				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];
+			
+			
+        
+			
+			
+            for(var i =0; i< 256; i++){
+                obj.r.push(0);
+                obj.g.push(0);
+                obj.b.push(0);
+            }
+
+            for(var i = 0; i < w; i++) {
+                for(var j = 0; j < h; j++) {
+                    var cor = imagem_atual.getPixelColor(i, j);
+                    var rgba = Jimp.intToRGBA(cor);
+                    obj.r[rgba.r]++;
+                    obj.g[rgba.g]++;
+                    obj.b[rgba.b]++;
+                }
+            }
+			
+			return obj;
+		}
+		
+		
+		function histNorm()
+		{
+				
+				var hist;
+				hist = histBasic();
+				
+			var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+			
+				var obj = {}
+				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];
+			
+			
+        
+			
+			
+            for(var i =0; i< 256; i++){
+                obj.r.push(hist.r[i] / (w*h));
+                obj.g.push(hist.r[i] / (w*h));
+                obj.b.push(hist.r[i] / (w*h));
+            }
+
+           return obj;			
+				
+		}
+		
+		
+			function histAcum()
+		{
+					
+				var obj = {}				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];	
+        
+			
+			
+            for(var i =0; i< 256; i++){
+				var aux = somatorioH(i);
+                obj.r.push(aux.r);
+                obj.g.push(aux.g);
+                obj.b.push(aux.b);
+            }
+
+           return obj;			
+				
+		}
+		
+		function somatorioH(valor)
+		{
+				var hist;
+				hist = histBasic();
+				var aux = {};
+				
+				aux.r = 0;
+				aux.g = 0;
+				aux.b = 0;
+				
+				for(var i =0; i<valor ; i++){
+					aux.r += hist.r[i];
+					aux.g += hist.g[i];
+					aux.b += hist.b[i];						
+				}	
+				return aux;				
+		}
+		
+		
+		
+		
+			function histAcumNorm()
+		{
+			   var obj = {}
+				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];	
+        
+			
+			
+            for(var i =0; i< 256; i++){
+				var aux = somatorioHnorm(i);
+                obj.r.push(aux.r);
+                obj.g.push(aux.g);
+                obj.b.push(aux.b);
+            }
+
+           return obj;			
+				
+		}
+		
+		function somatorioHnorm(valor)
+		{
+				var hist;
+				hist = histNorm();
+				var aux = {};
+				
+				aux.r = 0;
+				aux.g = 0;
+				aux.b = 0;
+				
+				for(var i =0; i<valor ; i++){
+					aux.r += hist.r[i];
+					aux.g += hist.g[i];
+					aux.b += hist.b[i];						
+				}	
+				return aux;				
+		}
+		
+		
+		
+			function equacaoHist()
+		{
+			
+			var hist;
+				hist = histAcumNorm();
+				
+            var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+
+            for(var i = 0; i < w; i++) {
+                for(var j = 0; j < h; j++) {
+                    var cor = imagem_atual.getPixelColor(i, j);
+                    var rgba = Jimp.intToRGBA(cor);
+					
+              var hex = Jimp.rgbaToInt(hist.r[rgba.r], hist.g[rgba.g], hist.b[rgba.b], 255);
+              imagem.setPixelColor(hex, i, j);
+				  
+                }
+            }
+			
+            exibirImagem(imagem);	
+		}
+		
+		
+		
+		
+		
+		
+        function aplicarThreshold(element) {
+            console.log("hellow");
+            var t = parseInt(element.value);
+            var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+
+            var imagem = imagem_atual.clone();
+            vetorR = [];
+            vetorG = [];
+            vetorB = [];
+			
+		
+            for(var i =0; i< 256; i++){
+                vetorR.push(0);
+                vetorG.push(0);
+                vetorB.push(0);
+            }
+
+            for(var i = 0; i < w; i++) {
+                for(var j = 0; j < h; j++) {
+                    var cor = imagem.getPixelColor(i, j);
+                    var rgba = Jimp.intToRGBA(cor);
+                    vetorR[rgba.r]++;
+                    vetorG[rgba.g]++;
+                    vetorB[rgba.b]++;
+                }
+            }
+            //console.log(vetorR)
+            //console.log(vetorG)
+           // console.log(vetorB)
+
+            exibirImagem(imagem);
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChart);
+        }
+
+
+
+        function drawChart() {
+            var aux=[];
+            aux.push( ['Histograma','R', 'G', 'B']);
+            for(var i =0; i< 256; i++){
+               aux.push([i,vetorR[i],vetorG[i],vetorB[i]]);
+            }
+            var data = google.visualization.arrayToDataTable(aux);
+
+            var options = {
+                title: 'Histograma',
+                hAxis: {title: 'Pixel',  titleTextStyle: {color: '#333'}},
+                vAxis: {minValue: 0}
+            };
+
+            var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+<p>Escolha um arquivo de imagem</p>
+<input type="file" onchange="mostrarImagem(this)">
+<p>Escolha um valor para o threshold</p>
+<input type="button" id="valor-threshold" value="Aplicar Histograma" onclick="equacaoHist()">
+<br>
+<img id="display">
+<div id="chart_div" style="width: 100%; height: 500px;"></div>
+</body>
+</html>

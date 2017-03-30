@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		 <meta charset="windows-1252">
+	   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<title>SITE MUITO LOKO</title>	
+     
+	 <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+      <script src="https://cdn.rawgit.com/oliver-moran/jimp/v0.2.27/browser/lib/jimp.min.js"></script>   
+	  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<link rel="stylesheet" href="style.css">	
+
+	</head>
+	
+	<style>
+	
+	.site-footer {
+    background: #191919;
+    padding: 20% 0;
+    text-align: center;
+}
+input[type="button"] {
+    width: 20%;
+    padding: 25px;
+}
+.menu-bar {
+    background: #000;
+    background: linear-gradient( rgba(40, 40, 40, 0.4), rgba(40, 40, 40, 0.4) );
+    display: block;    
+    position: absolute;
+	text-align:center;
+    width: 100%;
+}
+
+.b{
+    background-color: #141414; 
+    color: #848484; 
+    font-family: "Source Sans Pro", "Open Sans", sans-serif; */
+    font-size: 16px; 
+    line-height: 24px; 
+}
+
+
+.img_d{
+
+  
+	margin-top:20%;
+	
+
+}
+
+
+body{
+    background-color: white; 
+}
+
+
+
+
+
+
+#Content{padding-top:140px}
+body{padding:0 0 50px 0;margin:0 0 50px 0}
+#Content{width:1000px;margin:10px auto;padding:20px 0;}
+
+
+#PresetFilters 
+  button{
+  -webkit-border-radius:3px;
+  -moz-border-radius:3px;
+  border-radius:3px;-webkit-transition:background-color .3s ease-out;
+  -moz-transition:background-color .3s ease-out;
+  transition:background-color .3s ease-out;
+  background-color:#368ad2;
+  display:block;
+  float:left;
+  text-align:center;
+  padding:12px 10px;
+  color:#f8f8f2;
+  margin:5px;
+  border:none;
+  font-size:13px;
+  width:120px;cursor:pointer
+  }
+  
+  #PresetFilters   
+  button:focus{
+  background-color:#e69751
+  }
+
+
+
+	</style>
+	
+ <script type="text/javascript">
+
+        var imagem_1 = null;
+        var imagem_2 = null;
+		var imagem_3 = null;
+		var imagem_atual = null;
+ function mostrarImagem(element,valor) {
+ 
+  document.getElementById('d').style.display = 'none';
+  document.getElementById('e').style.display = 'none';
+  
+          var arquivo = element.files[0];
+          var reader = new FileReader();
+          reader.readAsArrayBuffer(arquivo);
+          reader.addEventListener('load', function(){
+            Jimp.read(this.result)
+              .then(function(imagem){
+                imagem = imagem.resize(510, 300);
+                if(valor===1)
+                    imagem_1 = imagem;
+                else
+				{
+				if(valor===2)
+				{
+				  imagem_2 = imagem;
+				}else
+				{
+				  imagem_3 = imagem;
+				}				                  
+								
+				}
+				exibirImagem(imagem,valor);
+
+              })
+              .catch(function(erro){
+                console.log('Não foi possível processar os dados da imagem.');
+                console.log(erro);
+              });
+          });
+        }
+        function exibirImagem(imagem,valor) {
+          imagem.getBase64(Jimp.MIME_JPEG, function(err, src){
+            if(valor === 1){
+                var img = document.getElementById('display-img1');
+                img.setAttribute('src', src);
+				imagem_atual = imagem.clone();
+				aplicarHistogramaBasic(1);
+				
+            }
+            else if(valor === 2) {
+                var img = document.getElementById('display-img2');
+                img.setAttribute('src', src);
+				imagem_atual = imagem.clone();
+				aplicarHistogramaBasic(2);
+            }
+            else{
+                 var img = document.getElementById('display-img3');
+                img.setAttribute('src', src);
+				imagem_atual = imagem.clone();
+				aplicarHistogramaBasic(3);
+            }
+                
+            });
+			
+			 document.getElementById('Content').style.display = 'block';
+        }
+		
+		
+		
+			function aplicarNEG() {   
+			var w = imagem_1.bitmap.width;
+            var h = imagem_1.bitmap.height;
+            var imagem = imagem_1.clone();
+			imagem = negativo(imagem,w,h);
+			exibirImagem(imagem,1);
+			
+				if(imagem_2 != null)
+				{		
+					w = imagem_2.bitmap.width;
+					h = imagem_2.bitmap.height;
+					imagem = imagem_2.clone();
+					imagem=negativo(imagem,w,h);
+					exibirImagem(imagem,2);
+						
+				}		
+		}
+		
+		
+		function negativo(imagem,w,h)
+		{ 		
+		for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor = imagem.getPixelColor(i, j);
+			  
+              var rgba = Jimp.intToRGBA(cor);
+			     rgba.r = 255 - rgba.r;
+				 rgba.g = 255 - rgba.g;
+				 rgba.b = 255 - rgba.b;	 			
+              var hex = Jimp.rgbaToInt(rgba.r, rgba.g, rgba.b, rgba.a);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+          return imagem;   
+			
+		}
+		
+		  function aplicarTHRES() {
+		
+            var t = parseInt(prompt("Digite o valor do Threshold: ")); 
+		       
+			var w = imagem_1.bitmap.width;
+            var h = imagem_1.bitmap.height;
+            var imagem = imagem_1.clone();
+			imagem = threshold(imagem,w,h,t);
+			exibirImagem(imagem,1);
+				if(imagem_2 != null)
+				{		
+					w = imagem_2.bitmap.width;
+					h = imagem_2.bitmap.height;
+					imagem = imagem_2.clone();
+					imagem = threshold(imagem,w,h,t);
+						 exibirImagem(imagem,2);
+						
+				}	
+        
+        }
+		
+		function threshold(imagem,w,h,t)
+		{
+		
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {
+              var cor = imagem.getPixelColor(i, j);
+              var rgba = Jimp.intToRGBA(cor);
+			  
+              rgba.r = CondicionalFilter(rgba.r, t);
+              rgba.g = rgba.r;
+              rgba.b = rgba.r;
+			  
+              var hex = Jimp.rgbaToInt(rgba.r, rgba.g, rgba.b, rgba.a);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }         
+          return imagem;
+		}
+		
+		
+		 function CondicionalFilter(valor, thres) {
+          if (valor <= thres) {
+            return 0;
+          } else {
+            return 255;
+          }
+        }
+		
+	
+ function aplicarAND() { 
+   
+	if(imagem_2 != null){
+	  var t = parseInt(prompt("Digite o valor do Threshold: ")); 
+			var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+	 
+            var imagem1 = imagem_1.clone();
+			var imagem2 = imagem_2.clone();
+			imagem1 = threshold(imagem1,w,h,t);
+			  exibirImagem(imagem1,1); 
+			imagem2 = threshold(imagem2,w,h,t);    
+  exibirImagem(imagem2,2); 			
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem1.getPixelColor(i, j);
+			  var cor2 = imagem2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  var r = AuxAND(rgba1.r,rgba2.r);
+			
+              var hex = Jimp.rgbaToInt(r, r, r, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+          exibirImagem(imagem,3); 
+}else{
+
+confirm("Para utilizar esse tratamento é necessario fazer o upload de uma nova imagem!");
+document.getElementById('e').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+
+}		  
+        }
+		
+		 function AuxAND(rgb1,rgb2) {		 
+			if((rgb1 == 0) && (rgb2 == 0))
+			{
+				return 0;
+			}else
+			{
+				return 255;			
+			}
+			
+		 }
+
+
+	
+		  function aplicarOR() {       
+     	if(imagem_2 != null){
+	  var t = parseInt(prompt("Digite o valor do Threshold: ")); 
+			var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+	 
+            var imagem1 = imagem_1.clone();
+			var imagem2 = imagem_2.clone();
+			imagem1 = threshold(imagem1,w,h,t);
+			  exibirImagem(imagem1,1); 
+			imagem2 = threshold(imagem2,w,h,t);    
+  exibirImagem(imagem2,2); 			
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem1.getPixelColor(i, j);
+			  var cor2 = imagem2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  var r = AuxOR(rgba1.r,rgba2.r);
+			
+              var hex = Jimp.rgbaToInt(r, r, r, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+          exibirImagem(imagem,3); 
+}else{
+
+confirm("Para utilizar esse tratamento é necessario fazer o upload de uma nova imagem!");
+document.getElementById('e').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+
+}	               
+        }
+		 
+			 function AuxOR(rgb1,rgb2) {		 
+			if((rgb1 == 0) || (rgb2 == 0))
+			{
+				return 0;
+			}else
+			{
+				return 255;			
+			}
+			
+		 }	 
+	
+ 	 
+		  function aplicarSOMA() {     
+
+if(imagem_2 != null){		  
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba1.r + rgba2.r);
+			  result.g = (rgba1.g + rgba2.g);
+			  result.b =(rgba1.b + rgba2.b);
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba1.r + rgba2.r),min.r,max.r);
+			  result.g = escalonar((rgba1.g + rgba2.g),min.g,max.g);
+			  result.b = escalonar((rgba1.b + rgba2.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,3);                 
+        }else{
+
+confirm("Para utilizar esse tratamento é necessario fazer o upload de uma nova imagem!");
+document.getElementById('e').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+
+}
+}
+		 
+			
+		 
+		 	 function escalonar(pix,min,max) {		 
+		
+				return parseInt((255/(max-min))*(pix-min)); 
+			
+		 }
+
+
+
+		 
+function aplicarSUB() { 
+  
+if(imagem_2 != null){		  
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba1.r - rgba2.r);
+			  result.g = (rgba1.g - rgba2.g);
+			  result.b =(rgba1.b - rgba2.b);
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba1.r - rgba2.r),min.r,max.r);
+			  result.g = escalonar((rgba1.g - rgba2.g),min.g,max.g);
+			  result.b = escalonar((rgba1.b - rgba2.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,3);                 
+        }else{
+
+confirm("Para utilizar esse tratamento é necessario fazer o upload de uma nova imagem!");
+document.getElementById('e').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+
+}
+}
+
+
+		
+		 
+		 	 function aplicarMULT() {    
+  if(imagem_2 != null){					 
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba1.r *rgba2.r);
+			  result.g = (rgba1.g * rgba2.g);
+			  result.b =(rgba1.b * rgba2.b);
+			  
+			
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba1.r * rgba2.r),min.r,max.r);
+			  result.g = escalonar((rgba1.g * rgba2.g),min.g,max.g);
+			  result.b = escalonar((rgba1.b * rgba2.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+			  	  
+              imagem.setPixelColor(hex, i, j);
+            }
+          }
+		   
+		  
+		  
+          exibirImagem(imagem,3);                 
+        }else{
+
+confirm("Para utilizar esse tratamento é necessario fazer o upload de uma nova imagem!");
+document.getElementById('e').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+
+}
+}
+		 
+		 
+		 	 function aplicarDIV() {  
+  if(imagem_2 != null){					 
+            var w = imagem_2.bitmap.width;
+            var h = imagem_2.bitmap.height;
+		
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+			//var vet[w*h];
+			var max = {};
+				var min = {};
+			max.r = 0;
+			max.g = 0;
+			max.b = 0;
+			min.r = 999;
+			min.g = 999;
+			min.b = 999;
+			
+        
+         
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+		
+			  var result  = {};
+			  result.r = (rgba1.r / rgba2.r);
+			  result.g = (rgba1.g / rgba2.g);
+			  result.b = (rgba1.b / rgba2.b);
+			  
+			
+			  
+				if(max.r < result.r)
+				{
+					max.r = result.r;
+				}else{
+					if(min.r > result.r)
+					{
+						min.r = result.r;
+					}					
+				}
+				
+				if(max.g < result.g)
+				{
+					max.g = result.g;
+				}else{
+					if(min.g > result.g)
+					{
+						min.g = result.g;
+					}					
+				}
+				
+				if(max.b < result.b)
+				{
+					max.b = result.b;
+				}else{
+					if(min.b > result.b)
+					{
+						min.b = result.b;
+					}					
+				}
+		
+            }
+          }
+		  
+		    
+          for(var i = 0; i < w; i++) {
+            for(var j = 0; j < h; j++) {			
+              var cor1 = imagem_1.getPixelColor(i, j);
+			  var cor2 = imagem_2.getPixelColor(i, j);			  
+              var rgba1 = Jimp.intToRGBA(cor1);
+			  var rgba2 = Jimp.intToRGBA(cor2);
+			  
+			var result  = {};
+		
+			  result.r = escalonar((rgba1.r / rgba2.r),min.r,max.r);
+			  result.g = escalonar((rgba1.g / rgba2.g),min.g,max.g);
+			  result.b = escalonar((rgba1.b / rgba2.b),min.b,max.b);
+			  
+		
+				
+              var hex = Jimp.rgbaToInt(result.r,result.g,result.b, 255);
+              imagem.setPixelColor(hex, i, j);
+            }
+          }	  
+          exibirImagem(imagem,3);                 
+        }else{
+
+confirm("Para utilizar esse tratamento é necessario fazer o upload de uma nova imagem!");
+document.getElementById('e').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+
+}
+}
+	
+function trocaImagem1()
+{
+
+document.getElementById('e').style.display = 'none';
+document.getElementById('d').style.display = 'block';
+document.getElementById('Content').style.display = 'none';
+}
+function trocaImagem2()
+{
+
+document.getElementById('e').style.display = 'block';
+document.getElementById('d').style.display = 'none';
+document.getElementById('Content').style.display = 'none';
+}
+	
+	
+function histBasic()
+		{
+			var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+			
+				var obj = {}
+				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];
+			
+			
+        
+			
+			
+            for(var i =0; i< 256; i++){
+                obj.r.push(0);
+                obj.g.push(0);
+                obj.b.push(0);
+            }
+
+            for(var i = 0; i < w; i++) {
+                for(var j = 0; j < h; j++) {
+                    var cor = imagem_atual.getPixelColor(i, j);
+                    var rgba = Jimp.intToRGBA(cor);
+                    obj.r[rgba.r]++;
+                    obj.g[rgba.g]++;
+                    obj.b[rgba.b]++;
+                }
+            }
+			
+			return obj;
+		}
+		
+		
+		function histNorm()
+		{
+				
+				var hist;
+				hist = histBasic();
+				
+			var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+			
+				var obj = {}
+				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];
+			
+			
+        
+			
+			
+            for(var i =0; i< 256; i++){
+                obj.r.push(hist.r[i] / (w*h));
+                obj.g.push(hist.g[i] / (w*h));
+                obj.b.push(hist.b[i] / (w*h));
+            }
+
+           return obj;			
+				
+		}
+		
+		
+			function histAcum()
+		{
+					
+				var obj = {}				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];	
+        
+			
+			
+            for(var i =0; i< 256; i++){
+				var aux = somatorioH(i);
+                obj.r.push(aux.r);
+                obj.g.push(aux.g);
+                obj.b.push(aux.b);
+            }
+
+           return obj;			
+				
+		}
+		
+		function somatorioH(valor)
+		{
+				var hist;
+				hist = histBasic();
+				var aux = {};
+				
+				aux.r = 0;
+				aux.g = 0;
+				aux.b = 0;
+				
+				for(var i =0; i<valor ; i++){
+					aux.r += hist.r[i];
+					aux.g += hist.g[i];
+					aux.b += hist.b[i];						
+				}	
+				return aux;				
+		}
+		
+		
+		
+		
+			function histAcumNorm()
+		{
+			   var obj = {}
+				
+				obj.r = [];
+				obj.g = [];
+				obj.b = [];	
+        
+			
+			
+            for(var i =0; i< 256; i++){
+				var aux = somatorioHnorm(i);
+                obj.r.push(aux.r);
+                obj.g.push(aux.g);
+                obj.b.push(aux.b);
+            }
+
+           return obj;			
+				
+		}
+		
+		function somatorioHnorm(valor)
+		{
+				var hist;
+				hist = histNorm();
+				var aux = {};
+				
+				aux.r = 0;
+				aux.g = 0;
+				aux.b = 0;
+				
+				for(var i =0; i<valor ; i++){
+					aux.r += hist.r[i];
+					aux.g += hist.g[i];
+					aux.b += hist.b[i];						
+				}	
+				return aux;				
+		}
+		
+		
+		
+			function equacaoHist(valor)
+		{
+			
+			var hist;
+				hist = histAcumNorm();
+				
+            var w = imagem_atual.bitmap.width;
+            var h = imagem_atual.bitmap.height;
+
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+
+            for(var i = 0; i < w; i++) {
+                for(var j = 0; j < h; j++) {
+                    var cor = imagem_atual.getPixelColor(i, j);
+                    var rgba = Jimp.intToRGBA(cor);
+					
+              var hex = Jimp.rgbaToInt(hist.r[rgba.r], hist.g[rgba.g], hist.b[rgba.b], 255);
+              imagem.setPixelColor(hex, i, j);
+				  
+                }
+            }
+			
+            exibirImagem(imagem,valor);	
+		}
+			
+	
+	
+	     function aplicarHistogramEqua() {
+			var hist;
+
+			imagem_atual = imagem_1.clone();
+			equacaoHist(1);
+			hist = histAcumNorm();
+			google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(function(){ drawChart(hist,1,"acumulado normalizado") })
+			
+			if(imagem_2 != null)
+			{
+			imagem_atual = imagem_2.clone();
+			equacaoHist(2);
+			hist = histAcumNorm();
+			google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(function(){ drawChart(hist,2,"acumulado normalizado") })
+			}
+			
+			if(imagem_3 != null)
+			{
+			imagem_atual = imagem_3.clone();
+			equacaoHist(3);
+			hist = histAcumNorm();
+			google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(function(){ drawChart(hist,3,"acumulado normalizado") })
+			}
+			
+			
+			
+          
+        }
+		
+function aplicarHistogramaBasic(valor) {
+var hist;
+hist = histBasic();
+
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(function(){ drawChart(hist,valor,"básico") })
+
+
+}
+
+        function drawChart(hist,valor,text) {
+		
+			
+            var aux=[];
+            aux.push( ['Histograma','R', 'G', 'B']);
+            for(var i =0; i< 256; i++){
+               aux.push([i,hist.r[i],hist.g[i],hist.b[i]]);
+            }
+            var data = google.visualization.arrayToDataTable(aux);
+
+            var options = {
+                title: 'Histograma '+text,
+                hAxis: {title: 'Pixel',  titleTextStyle: {color: '#999'}},
+                vAxis: {minValue: 0}
+            };
+			if(valor == 1)
+			{
+				document.getElementById('chart_div1').style.display = 'block';
+				 var chart = new google.visualization.AreaChart(document.getElementById('chart_div1'));
+				chart.draw(data, options);
+			}else
+			{
+			if(valor == 2)
+			{
+				document.getElementById('chart_div2').style.display = 'block';
+				 var chart = new google.visualization.AreaChart(document.getElementById('chart_div2'));
+				chart.draw(data, options);
+				}else{
+				
+				document.getElementById('chart_div3').style.display = 'block';
+				 var chart = new google.visualization.AreaChart(document.getElementById('chart_div3'));
+				chart.draw(data, options);
+				
+				}
+			}
+			
+		
+           
+        }
+		
+		
+	
+		function aplicarSuav()
+		{
+	
+		
+			var w = imagem_1.bitmap.width;
+            var h = imagem_1.bitmap.height;
+	//	var imagem2 = threshold(imagem_1,w,h,200);
+			var imagem = new Jimp(w, h, 0xFFFFFFFF);
+
+	
+		
+		var a = parseInt(3/2);
+		var b = parseInt(3/2);
+		
+		
+			
+			for(var i = 1; i < w-1; i++) {
+            for(var j = 1; j < h-1; j++) {			
+             	var valor = {};
+				 valor.r = 0;
+				 valor.g = 0;
+				 valor.b = 0;
+				for(var s=-a ; s<= a; s++){
+				for(var t=-b ; t<= b; t++){
+			
+				 var cor1 = imagem2.getPixelColor(i+s, j+t);			  
+				  var rgba1 = Jimp.intToRGBA(cor1);
+						valor.r += rgba1.r;
+						valor.g += rgba1.g;
+						valor.b += rgba1.b;
+			}
+			}
+			
+			valor.r = parseInt(valor.r/9);
+			valor.g = parseInt(valor.g/9);
+			valor.b = parseInt(valor.b/9);
+			
+		
+			var hex = Jimp.rgbaToInt(valor.r,valor.g, valor.b, 255);
+              imagem.setPixelColor(hex, i, j);
+			  
+		  }
+	      }
+		  
+		  exibirImagem(imagem,1);
+		}
+		
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</script>	
+	
+	
+	
+	<body class="header-collapse">	
+	
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+			<a href =""><img src="logo.png" alt="Site Title" width = "50px" height ="50px"></a>
+        </div>        
+      </div>
+    </nav>
+	
+	
+	
+	<div class="b" id="d">	
+					
+	
+		
+		<div id="site-content" >		
+			<footer class="site-footer">
+				<div class="container">								
+				
+				
+					<form action="#" class="newsletter-form">
+						<input type="file" name="arquivo1" style="display:none;" onchange="mostrarImagem(this,1)">
+						<input type="email" placeholder="Selecione uma imagem ..." readonly="true">
+						<input type="button" class="button cut-corner" value="Upload" onClick="arquivo1.click()">
+					</form>					
+				
+
+			  </div>
+			</footer> 
+		</div>			
+	</div>
+	
+<div class="b" id="e" style="display:none;">	
+			<header>
+					<div class="menu-bar menu">
+				
+					
+						<div class="col-md-2">
+							<div id="logo">		
+								<a href=""><img src="logo.png" alt="Site Title" width = "50px" height ="50px">		</a>
+							</div>
+						</div>	
+					
+					
+			</div>				
+			</header> 		
+	
+		
+		<div id="site-content" >		
+			<footer class="site-footer">
+				<div class="container">								
+				
+				
+					<form action="#" class="newsletter-form">
+						<input type="file" name="arquivo2" style="display:none;" onchange="mostrarImagem(this,2)">
+						<input type="email" placeholder="Selecione uma imagem ..." readonly="true">
+						<input type="button" class="button cut-corner" value="Upload" onClick="arquivo2.click()">
+					</form>					
+				
+
+			  </div>
+			</footer> 
+		</div>			
+	</div>	
+	
+	
+	
+	<div id="Content" style="display:none;" >
+	<div class="img_d">
+	<div>
+		<div style="float:left"> <img id="display-img1" onclick="trocaImagem1()"></div>
+		<div style=" display:none; float:right;" id="chart_div1" style="width: 200px; height: 300px;"></div>
+	</div>
+		<div class ="row">
+		</div>
+								<br>
+				<div>
+		<div style="float:left"> <img id="display-img2" onclick="trocaImagem2()"></div>
+		<div style="display:none; float:right;" id="chart_div2" style="width: 250px; height: 250px;"></div>
+	</div>
+		<div class ="row">
+		</div>
+				<br>
+				
+						<div>
+		<div style="float:left"> <img id="display-img3" ></div>
+		<div style=" display:none; float:right;" id="chart_div3" style="width: 250px; height: 250px;"></div>
+	</div>
+		<div class ="row">
+		</div>
+				
+	
+  <h3>Aplicações</h3>
+  <p>Alguns dos tratamentos será solicitado uma nova imagem.</p>
+
+
+  <div id="PresetFilters">
+  
+  
+    <button onclick="aplicarNEG()">Negativo</button>
+	
+    <button onclick="aplicarTHRES()">Threshold</button>
+  
+    <button onclick="aplicarAND()">And</button>
+  
+    <button onclick="aplicarOR()">Or</button>
+  
+    <button onclick="aplicarSOMA()">Soma</button>
+    
+    <button onclick="aplicarSUB()">Subtração</button>
+	  
+    <button onclick="aplicarDIV()">Divisão</button>
+	
+	<button onclick="aplicarMULT()">Multiplicação</button>
+
+	<button onclick="aplicarHistogramEqua()">Eq Histograma</button>
+	
+		<button onclick="trocaImagem1()">Upload img 1</button>
+
+		<button onclick="trocaImagem2()">Upload img 2</button>
+		
+		<button onclick="aplicarSuav()">Suavização</button>
+		
+			<button onclick="aplicarSuav()">Realce</button>
+  </div>
+</div>
+
+
+	
+		</div>
+	
+	
+	
+	</body>
+	
+	
+
+</html>
